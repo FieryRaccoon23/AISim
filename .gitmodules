@@ -1,3 +1,6 @@
 [submodule "vendor/litegraph"]
 	path = vendor/litegraph
 	url = https://github.com/FieryRaccoon23/litegraph.js.git
+[submodule "vendor/drawflow"]
+	path = vendor/drawflow
+	url = https://github.com/FieryRaccoon23/Drawflow.git
