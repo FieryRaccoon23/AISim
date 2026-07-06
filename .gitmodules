@@ -1,0 +1,3 @@
+[submodule "vendor/litegraph"]
+	path = vendor/litegraph
+	url = https://github.com/FieryRaccoon23/litegraph.js.git
