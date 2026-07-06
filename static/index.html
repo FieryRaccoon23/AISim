@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Blueprint Graph UI</title>
+  <link rel="stylesheet" href="/litegraph-assets/css/litegraph.css">
+  <script src="/litegraph-assets/build/litegraph.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #1a1a1a;
+      font-family: sans-serif;
+      color: #eee;
+    }
+    #toolbar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+    }
+    #toolbar button {
+      padding: 8px 14px;
+      background: #2d6cdf;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    #toolbar button:hover {
+      background: #1e57bd;
+    }
+    #result {
+      margin-left: 12px;
+      font-size: 13px;
+      color: #9be89b;
+    }
+    #mycanvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <button onclick="runGraph()">Run Graph</button>
+    <span id="result"></span>
+  </div>
+  <canvas id="mycanvas"></canvas>
+
+  <script>
+    // --- Example custom node. Define your own node types here. ---
+    function MyAddNode() {
+      this.addInput("A", "number");
+      this.addInput("B", "number");
+      this.addOutput("A+B", "number");
+      this.properties = { precision: 1 };
+    }
+    MyAddNode.title = "Add";
+    MyAddNode.prototype.onExecute = function () {
+      const a = this.getInputData(0) || 0;
+      const b = this.getInputData(1) || 0;
+      this.setOutputValue(0, a + b);
+    };
+    LiteGraph.registerNodeType("math/add", MyAddNode);
+
+    // --- Set up the graph + canvas ---
+    const graph = new LGraph();
+    const canvas = new LGraphCanvas("#mycanvas", graph);
+
+    function resizeCanvas() {
+      const el = document.getElementById("mycanvas");
+      el.width = window.innerWidth;
+      el.height = window.innerHeight;
+      canvas.resize();
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    // Seed the graph with a couple of example nodes so there's something on screen
+    const constNode = LiteGraph.createNode("basic/const");
+    constNode.pos = [200, 200];
+    graph.add(constNode);
+
+    const addNode = LiteGraph.createNode("math/add");
+    addNode.pos = [450, 200];
+    graph.add(addNode);
+
+    constNode.connect(0, addNode, 0);
+
+    graph.start();
+
+    // --- Send the current graph to the FastAPI backend ---
+    async function runGraph() {
+      const resultEl = document.getElementById("result");
+      resultEl.textContent = "Running...";
+      try {
+        const response = await fetch("/api/graph", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(graph.serialize()),
+        });
+        const data = await response.json();
+        resultEl.textContent = `OK: ${data.node_count} nodes, ${data.link_count} links (see server console)`;
+      } catch (err) {
+        resultEl.textContent = "Error: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
