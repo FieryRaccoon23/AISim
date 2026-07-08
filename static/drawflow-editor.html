@@ -1,17 +1,3 @@
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
-import os
-
-app = FastAPI()
-
-# Mount static files for Drawflow and our own frontend assets
-app.mount("/vendor/drawflow", StaticFiles(directory="vendor/drawflow/dist"), name="drawflow")
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-@app.get("/", response_class=HTMLResponse)
-async def read_root():
-    return """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -245,8 +231,3 @@ async def read_root():
   </script>
 </body>
 </html>
-"""
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
