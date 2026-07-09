@@ -58,5 +58,4 @@ _Update this section once the module/folder layout is real — e.g. where
   - Can be run directly with `python main.py` on http://127.0.0.1:8000
 
 ## Gotchas
-- (empty — add anything that trips you up, e.g. Drawflow quirks, JSON
-  export format surprises, etc.)
+- 
