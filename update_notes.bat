@@ -1,6 +1,13 @@
 @echo off
 setlocal enabledelayedexpansion
 
+REM Force UTF-8 console + Python I/O encoding. Without this, Aider
+REM crashes with UnicodeEncodeError on Windows whenever it tries to
+REM print a file/message containing a character the legacy cp1252
+REM codepage can't represent (e.g. checkmarks, smart quotes, emoji).
+chcp 65001 >nul
+set PYTHONIOENCODING=utf-8
+
 REM update_notes.bat
 REM Runs Aider once, non-interactively, to create/update NOTES.md
 REM based on the current state of the codebase. Uses your local
@@ -93,6 +100,7 @@ if "!FILEARGS!"=="" (
 aider --openai-api-base http://localhost:1234/v1 ^
       --openai-api-key lm-studio ^
       --model openai/qwen3-coder-30b ^
+      --edit-format diff ^
       --yes-always --no-stream --no-auto-commits ^
       !FILEARGS! ^
       --message "Update NOTES.md to reflect the current project structure, module responsibilities, and design decisions. Create it if it doesn't exist."

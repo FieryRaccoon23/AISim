@@ -12,6 +12,10 @@ This project is a FastAPI-based web application with the following structure:
   - `drawflow.html` - HTML template for drawflow functionality  
   - `index.html` - Main index page
 - `test_drawflow.py` - Test file for drawflow functionality
+- `Core/` - Core application modules
+  - `app_setup.py` - FastAPI app setup and static file mounting
+  - `routes.py` - Route handlers for the web interface
+  - `__init__.py` - Package initialization
 - `vendor/` - Third-party libraries directory
   - `drawflow/` - Drawflow library
   - `litegraph/` - LiteGraph library
@@ -20,10 +24,18 @@ This project is a FastAPI-based web application with the following structure:
 
 ### main.py
 - Defines the FastAPI application instance
-- Implements route handlers for the web interface
-- Serves static HTML files for the drawflow editor and main interface
+- Imports routes to register them with the app
+- Runs the uvicorn server on 127.0.0.1:8000
+
+### Core/app_setup.py
+- Creates the FastAPI application instance
+- Mounts static files for Drawflow and frontend assets
+- Sets up the application structure
+
+### Core/routes.py
+- Defines route handlers for the web interface
 - Handles root endpoint with HTML response
-- Mounts static file directories for vendor libraries and application assets
+- Serves the drawflow editor interface from the main route
 
 ### config.yaml
 - Configures logging level (currently set to INFO)
@@ -36,9 +48,9 @@ This project is a FastAPI-based web application with the following structure:
 - Includes configuration management (python-dotenv, PyYAML)
 
 ### Static Files
-- `drawflow-editor.html` - Full-featured drawflow editor interface with node creation and export functionality
-- `drawflow.html` - Drawflow interface focused on graph execution with run functionality
-- `index.html` - Main index page with LiteGraph-based interface
+- `drawflow-editor.html` - Full-featured drawflow editor interface with node creation and export functionality (served at root)
+- `drawflow.html` - Drawflow interface focused on graph execution with run functionality (not currently used in routing)
+- `index.html` - Main index page with LiteGraph-based interface (not currently used in routing)
 
 ### test_drawflow.py
 - Contains testing functions for drawflow functionality
@@ -59,10 +71,9 @@ This project is a FastAPI-based web application with the following structure:
 
 6. **Cross-platform Compatibility**: Dependencies include platform-specific optimizations (uvloop for Unix systems).
 
-7. **Multiple Interface Options**: The project provides three different HTML interfaces:
-   - Full drawflow editor (`drawflow-editor.html`)
-   - Drawflow execution interface (`drawflow.html`) 
-   - LiteGraph-based interface (`index.html`)
+7. **Modular Architecture**: The application is organized into a Core package to separate concerns and improve maintainability.
+
+8. **Current Routing Focus**: The main route (/) serves the drawflow editor interface, while other HTML files are present but not actively routed to in the current implementation.
 
 ## Dependencies Overview
 
