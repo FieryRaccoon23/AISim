@@ -11,9 +11,20 @@ REM add/delete/rename files), this script asks git for the CURRENT
 REM list of tracked files matching common source/config extensions,
 REM and builds the --file arguments dynamically every run.
 REM
-REM Edit the "git ls-files" pattern list below to match the file
-REM types you actually want included. Excludes vendor/, NOTES.md
-REM itself, and Aider's own housekeeping files.
+REM Two layers of protection against passing a directory to --file:
+REM   1. Submodules are excluded by reading .gitmodules directly and
+REM      skipping any path git lists that matches a known submodule.
+REM   2. Fallback: for every remaining path, convert forward slashes to
+REM      backslashes and test "path\NUL" - this only resolves if the
+REM      path is a real directory (NUL is a device that exists inside
+REM      every directory, never inside a file). The backslash
+REM      conversion matters: "vendor/drawflow\NUL" (mixed separators)
+REM      does not reliably resolve on Windows, but
+REM      "vendor\drawflow\NUL" does.
+REM
+REM Edit the "git ls-files" pattern list to match the file types you
+REM actually want included. Excludes vendor/, NOTES.md itself, and
+REM Aider's own housekeeping files.
 REM
 REM --no-auto-commits: Aider edits NOTES.md but does NOT commit it.
 REM Review with `git diff NOTES.md`, commit yourself when ready.
@@ -25,20 +36,59 @@ echo Updating NOTES.md via Aider + LM Studio...
 echo.
 
 set FILEARGS=
+set INCLUDED=
+set SKIPPED=
 
-for /f "delims=" %%F in ('git ls-files -- "*.py" "*.yaml" "*.yml" "*.txt" "*.toml" "*.ini" ":!:vendor/*" ":!:NOTES.md" ":!:.aider*"') do (
-    set FILEARGS=!FILEARGS! --file "%%F"
+REM --- Build list of submodule paths from .gitmodules (if any) ---
+set SUBMODULES=
+if exist ".gitmodules" (
+    for /f "tokens=2 delims== " %%S in ('git config --file .gitmodules --get-regexp path') do (
+        set SUBMODULES=!SUBMODULES! %%S
+    )
 )
 
-if "!FILEARGS!"=="" (
-    echo No matching tracked files found. Check the git ls-files patterns in this script.
-    pause
-    exit /b 1
+REM --- Walk tracked files matching our extensions, skip submodules/dirs ---
+for /f "delims=" %%F in ('git ls-files -- "*.py" "*.yaml" "*.yml" "*.txt" "*.toml" "*.ini" ":!:vendor/*" ":!:NOTES.md" ":!:.aider*"') do (
+    set "IS_SUBMODULE="
+    for %%S in (!SUBMODULES!) do (
+        if /i "%%F"=="%%S" set "IS_SUBMODULE=1"
+    )
+
+    set "NORMALIZED=%%F"
+    set "NORMALIZED=!NORMALIZED:/=\!"
+
+    if defined IS_SUBMODULE (
+        set SKIPPED=!SKIPPED! %%F
+    ) else if exist "!NORMALIZED!\NUL" (
+        set SKIPPED=!SKIPPED! %%F
+    ) else (
+        set FILEARGS=!FILEARGS! --file "%%F"
+        set INCLUDED=!INCLUDED! %%F
+    )
 )
 
 echo Files being included:
-git ls-files -- "*.py" "*.yaml" "*.yml" "*.txt" "*.toml" "*.ini" ":!:vendor/*" ":!:NOTES.md" ":!:.aider*"
+if "!INCLUDED!"=="" (
+    echo   ^(none^)
+) else (
+    for %%A in (!INCLUDED!) do echo   %%A
+)
 echo.
+echo Skipped ^(submodules/directories, not passed to --file^):
+if "!SKIPPED!"=="" (
+    echo   ^(none^)
+) else (
+    for %%A in (!SKIPPED!) do echo   %%A
+)
+echo.
+
+if "!FILEARGS!"=="" (
+    echo No files ended up in the include list - see the breakdown above
+    echo to see whether everything was skipped or git ls-files found nothing.
+    echo Check the git ls-files patterns in this script if that looks wrong.
+    pause
+    exit /b 1
+)
 
 aider --openai-api-base http://localhost:1234/v1 ^
       --openai-api-key lm-studio ^
