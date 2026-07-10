@@ -24,7 +24,24 @@
       overflow: hidden;
     }
 
-    #app { display: flex; height: 100%; }
+    #app { display: flex; height: 100%; position: relative; }
+
+    /* ---------------- Toggle button (fixed, always reachable) ---------------- */
+    #toggle-sidebar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 34px;
+      height: 34px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 20;
+    }
+    #toggle-sidebar:hover { filter: brightness(1.1); }
 
     /* ---------------- Left panel ---------------- */
     #sidebar {
@@ -33,9 +50,18 @@
       background: var(--bg-sidebar);
       border-right: 1px solid #ddd;
       padding: 12px;
+      padding-top: 52px; /* room for the fixed toggle button */
       box-sizing: border-box;
       overflow-y: auto;
+      position: relative;
+      transition: transform 0.3s ease, margin-left 0.3s ease;
     }
+
+    #sidebar.closed {
+      transform: translateX(-100%);
+      margin-left: -220px; /* collapse the space it would otherwise leave behind */
+    }
+
     #sidebar h3 {
       font-size: 13px;
       text-transform: uppercase;
@@ -107,7 +133,10 @@
 </head>
 <body>
   <div id="app">
-    <div id="sidebar">
+    <!-- Toggle button lives outside #sidebar so it never moves off-screen -->
+    <button id="toggle-sidebar">☰</button>
+
+    <div id="sidebar" class="closed">
       <h3>Nodes</h3>
       <div class="drag-node" draggable="true" data-node="start">Start Node</div>
       <div class="drag-node" draggable="true" data-node="process">Process Node</div>
@@ -217,16 +246,22 @@
     window.addEventListener('load', () => {
       // Add a start node
       editor.addNode('start', 0, 1, 100, 100, 'Start Node', {}, 'start');
-      
+
       // Add a process node
       editor.addNode('process', 1, 1, 300, 100, 'Process Node', {}, 'process');
-      
+
       // Add an end node
       editor.addNode('end', 1, 0, 500, 100, 'End Node', {}, 'end');
-      
+
       // Connect the nodes
       editor.addConnection('start', 'process', 'output', 'input');
       editor.addConnection('process', 'end', 'output', 'input');
+    });
+
+    // Toggle sidebar functionality
+    document.getElementById('toggle-sidebar').addEventListener('click', function() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('closed');
     });
   </script>
 </body>
