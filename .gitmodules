@@ -1,0 +1,3 @@
+[submodule "vendor/mesa"]
+	path = vendor/mesa
+	url = https://github.com/mesa/mesa.git
