@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit",
+      "Write",
+      "Bash(python -m pytest:*)",
+      "Bash(python -m ruff:*)",
+      "Bash(python -m mypy:*)",
+      "Bash(python -c:*)"
+    ],
+    "deny": [
+      "Bash(git:*)",
+      "Bash(pip:*)",
+      "Bash(pip3:*)",
+      "Bash(python -m pip:*)",
+      "Bash(python -m venv:*)",
+      "Bash(uv:*)",
+      "Bash(conda:*)",
+      "Bash(poetry:*)",
+      "Edit(requirements.txt)",
+      "Edit(pyproject.toml)",
+      "Edit(TASKS.md)",
+      "Edit(CLAUDE.md)",
+      "Edit(.claude/**)",
+      "Edit(vendor/**)",
+      "Edit(venv_AISim/**)",
+      "Read(venv_AISim/**)",
+      "Read(**/__pycache__/**)",
+      "Read(.env)"
+    ]
+  }
+}

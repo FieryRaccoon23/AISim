@@ -145,11 +145,11 @@ git submodule update --init --recursive
 
 ### 2. Set Up Python Environment
 ```bash
-python -m venv venv
+python -m venv venv_AISim
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies in editable mode
-pip install -e "./external/mesa[rec]"
+pip install -e "./vendor/mesa[rec]"
 pip install pydantic
 ```
 
